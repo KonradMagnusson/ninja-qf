@@ -4,8 +4,7 @@ local lazy = require("ninja-qf.lazy")
 
 
 M.opts = {
-	qf_format = "ignored for now",
-	pad_target = "also ignored for now"
+	qf_format = "{file:>35}|L{line:>5}:C{col:3}|{type:=7}|  {text}",
 }
 
 local function populate_config( opts )
@@ -34,15 +33,32 @@ local function set_options()
 
 end
 
+local function ExpandPadding( source, c )
+	local re = "{"..c..";(.*);"..c..":([<%=>]?)(%d+)}"
+	local captureless = "{"..c..";.*;"..c..":[<%=>]?%d+}"
+
+	local _, _, txt, just, pad_width = string.find( source, re )
+	pad_width = tonumber(pad_width) or 0
+	pad_width = math.max(pad_width - #txt, 0)
+
+	if just == ">" then
+		return string.gsub( source, captureless, string.rep( " ", pad_width ) .. txt )
+	end
+	if just == "=" then
+		local lpad = (pad_width / 2) - (pad_width / 2) % 1
+		local rpad = (pad_width / 2) + (pad_width / 2) % 1
+		return string.gsub( source, captureless, string.rep( " ", lpad ) .. txt .. string.rep( " ", rpad ) )
+	end
+		return string.gsub( source, captureless, txt .. string.rep( " ", pad_width ) )
+
+end
+
 M.NinjaQFTextFunc = function( info )
 	if info.quickfix ~= 1 then
 		return -- idc about loclist atm
 	end
 
 	local ret = {}
-
-	local qf_format = "{file}|L{line}:{col}{padding}{type}|{text}" -- hardcoded until I cbf with figuring out how to do syntax groups in a sane way
-	local pad_target = 50 -- (temporary) target column to pad (the end of ) {padding} to
 
 	local list = vim.fn.getqflist( { id = info.id, items = 0, qfbufnr = 0, context = 0 } )
 	for i = info.start_idx, info.end_idx do
@@ -56,17 +72,17 @@ M.NinjaQFTextFunc = function( info )
 			if item.type == "w" then type = "warning" end
 			if item.type == "n" then type = "note" end
 
-			-- (temporary) - hardcoded padding calculations to match the hardcoded format above
-			local pad_width = pad_target - ( #file + 2 + #tostring(item.lnum) + 1 + #tostring(item.col) + #type + 1)
-			local padding = string.rep(" ", pad_width)
+			local fmt = M.opts.qf_format
+			fmt = string.gsub( fmt, "{col:([<%=>]?%d+)}",	  "{col;" ..item.col.. ";col:%1}" )
+			fmt = ExpandPadding( fmt, "col" )
+			fmt = string.gsub( fmt, "{file:([<%=>]?%d+)}",  "{file;"  ..file..   ";file:%1}" )
+			fmt = ExpandPadding( fmt, "file" )
+			fmt = string.gsub( fmt, "{line:([<%=>]?%d+)}",  "{line;"..item.lnum..";line:%1}" )
+			fmt = ExpandPadding( fmt, "line" )
+			fmt = string.gsub( fmt, "{type:([<%=>]?%d+)}",  "{type;"  ..type..   ";type:%1}" )
+			fmt = ExpandPadding( fmt, "type" )
 
-			local fmt = qf_format
-			fmt = string.gsub( fmt, "{col}", item.col )
-			fmt = string.gsub( fmt, "{file}", file )
-			fmt = string.gsub( fmt, "{line}", item.lnum )
-			fmt = string.gsub( fmt, "{padding}", padding )
 			fmt = string.gsub( fmt, "{text}", item.text )
-			fmt = string.gsub( fmt, "{type}", type )
 			table.insert( ret, fmt)
 		end
 	end

@@ -11,7 +11,9 @@ This is a rather simple plugin meant to go with a version of [Ninja](https://git
 return {
     "konradmagnusson/ninja-qf",
     dependencies = { "rcarriga/nvim-notify" },  -- I'm not actually sure about this, I just haven't tested without it (and won't).
-    opts = {}                                   -- Nothing is actually configurable yet, but there's stuff on the roadmap
+    opts = {
+	    qf_format = "{file:>20}|L{line:>5}:C{col:3}|{type:=7}|  {text}", -- syntax: {(category):[justification](padding)}
+    }
 }
 ```
 Note that you either have to explicitly specify an empty `opts` for Lazy to initialize the plugin properly. Otherwise, you need to explicitly call `require("ninja-qf").setup({})`.
@@ -23,6 +25,8 @@ If `nvimja` isn't used, obviously nothing will show up in the quickfix window.
 
 ## TODO:
 
-- [ ] Make the quickfix window format (and highlight) configurable. Column order and padding, text justification, etc.
+- [x] Make the quickfix window format configurable. Column order and padding, text justification, etc.
+
+- [ ] Add configuratble QFquickfix window highlight that adapts to the format string
 
 - [ ] Write some documentation maybe
