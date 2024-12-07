@@ -10,9 +10,25 @@ This is a rather simple plugin meant to go with a version of [Ninja](https://git
 ```lua
 return {
     "konradmagnusson/ninja-qf",
+
     dependencies = { "rcarriga/nvim-notify" },  -- I'm not actually sure about this, I just haven't tested without it (and won't).
+
     opts = {
-	    qf_format = "{file:>20}|L{line:>5}:C{col:3}|{type:=7}|  {text}", -- syntax: {(category):[justification](padding)}
+	    qf_format = "{type:=7}|{file:>35}|L{line:>5}|C{col:>3}|  {text}" -- syntax: {(category):[justification](padding)}
+        -- note: only one category per column is supported for now. Columns are separated by |
+        -- The final column doesn't need a width set - it'll adapt to the window.
+        -- Making any arbitrary column variable width is a bigger headache than I care to deal with right now 😅
+
+        -- The highlight groups are mapped like so:
+        --      type → ninjaQfType
+        --      (keyword) error → DiagnosticError
+        --      (keyword) warning → DiagnosticWarning
+        --      (keyword) note → DiagnosticNote
+        --      text → ninjaQfText → Normal
+        --      file → ninjaQfFileName → qfFileName
+        --      col → ninjaQfColNr → qfLineNr
+        --      line → ninjaQfLineNr → qfLineNr
+        --      (match) '|' → qfSeparator
     }
 }
 ```
@@ -27,6 +43,10 @@ If `nvimja` isn't used, obviously nothing will show up in the quickfix window.
 
 - [x] Make the quickfix window format configurable. Column order and padding, text justification, etc.
 
-- [ ] Add configuratble QFquickfix window highlight that adapts to the format string
+- [x] Add configurable quickfix window highlight that adapts to the format string
+
+- [ ] Do some proper error handling to make sure things don't crash and burn if e.g. an incompatible `qf_format` is configured. Truncate?
+
+- [ ] Improve formatting flexibility and options
 
 - [ ] Write some documentation maybe
