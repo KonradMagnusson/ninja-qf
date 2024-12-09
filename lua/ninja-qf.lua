@@ -73,9 +73,6 @@ local function register_autocmds()
 				local total_width = 0
 				local i = 1
 				for col in string.gmatch(line_str, "[^|]+") do
-					if i == 1 then
-						vim.notify(col .. "   " .. columns[i])
-					end
 					local width = i ~= #columns and #col or -1
 					local start_col = total_width + i - 1
 					local end_col = width ~= -1 and ( start_col + width ) or -1 -- -1 means "to EOL"
