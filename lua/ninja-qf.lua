@@ -33,6 +33,27 @@ local function register_autocmds()
 		end
 	})
 
+	vim.api.nvim_create_autocmd( "User", {
+		pattern = "NinjaBuildStarted",
+		callback = function(ev)
+			vim.notify( "Build started!", vim.log.levels.INFO, { title = "ninja-qf", icon = "󰝴" } )
+		end
+	})
+
+	vim.api.nvim_create_autocmd( "User", {
+		pattern = "NinjaBuildFinished",
+		callback = function(ev)
+			vim.notify( "Build finished!", vim.log.levels.INFO, { title = "ninja-qf", icon = "󰝴" } )
+		end
+	})
+
+	vim.api.nvim_create_autocmd( "User", {
+		pattern = "NinjaBuildFailed",
+		callback = function(ev)
+			vim.notify( "Build failed!", vim.log.levels.ERROR, { title = "ninja-qf", icon = "󰝴" } )
+		end
+	})
+
 	vim.api.nvim_create_autocmd( "TextChanged", {
 		callback = function(ev)
 			if vim.api.nvim_buf_get_option( ev.buf, "filetype" ) ~= "ninja-qf" then
